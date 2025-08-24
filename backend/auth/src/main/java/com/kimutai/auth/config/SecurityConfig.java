@@ -57,6 +57,7 @@ public class SecurityConfig {
         cfg.setAllowedOrigins(List.of(
             "http://localhost:5173",
             "https://secure-auth-service-git-main-kimutaikevins-projects.vercel.app"));
+        cfg.addAllowedOriginPattern("*"); // Allow all origins (for development; restrict in production)
         cfg.setAllowedMethods(List.of("GET","POST","PUT","PATCH","DELETE","OPTIONS"));
         cfg.setAllowedHeaders(List.of("Authorization","Content-Type"));
         cfg.setAllowCredentials(true);

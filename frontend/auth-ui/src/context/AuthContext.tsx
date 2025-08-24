@@ -21,7 +21,8 @@ export const AuthContext = createContext<AuthContextType | undefined>(
 export const AuthProvider = ({ children }: { children: ReactNode }) => {
   const [user, setUser] = useState<User | null>(null);
   const [token, setToken] = useState<string | null>(null);
-  const navigate = useNavigate(); // ✅ must be at top
+  const navigate = useNavigate();
+  const API_URL = "https://secure-auth-service-backend.onrender.com";
 
   // Load user and token from localStorage on initial render
   useEffect(() => {
@@ -49,7 +50,7 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
 
   // ---- Signup function ----
   const signup = async (email: string, password: string) => {
-    const response = await fetch("http://localhost:8080/api/auth/signup", {
+    const response = await fetch(`${API_URL}/api/auth/signup`, {
       method: "POST",
       headers: { "Content-Type": "application/json" },
       body: JSON.stringify({ email, password }),
@@ -70,7 +71,7 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
 
   // ---- Login function ----
   const login = async (email: string, password: string) => {
-    const response = await fetch("http://localhost:8080/api/auth/login", {
+    const response = await fetch(`${API_URL}/api/auth/login`, {
       method: "POST",
       headers: { "Content-Type": "application/json" },
       body: JSON.stringify({ email, password }),

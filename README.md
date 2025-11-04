@@ -9,7 +9,8 @@ A secure authentication service built with Go and Gin framework, providing JWT-b
 - Protected routes
 - Password reset functionality
 - Email notifications
-- In-memory storage (configurable for database integration)
+- PostgreSQL database integration
+- Postman collection for API testing
 
 ## Prerequisites
 
@@ -75,7 +76,69 @@ go run main.go
 
 2. The server will start on the configured port (default: 8080)
 
-## API Request Examples
+## API Testing with Postman
+
+### Setting Up Postman
+
+1. Import the collection:
+
+   - Open Postman
+   - Click "Import"
+   - Select `auth-system.postman_collection.json` from the project root
+
+2. Create an environment:
+   - Click "Environments" -> "New"
+   - Name it (e.g., "Local Auth System")
+   - The collection automatically sets:
+     - `base_url`: `http://localhost:8080`
+     - `jwt_token`: (set automatically after login)
+   - Click "Save"
+
+### Testing Flow
+
+1. **Register a New User**
+
+   - Use "Register User" request
+   - Provides example JSON body for registration
+   - Returns user profile on success
+
+2. **Login**
+
+   - Use "Login" request with registered credentials
+   - Automatically saves JWT token to environment
+   - Returns token and user profile
+
+3. **Protected Routes** (requires login first)
+
+   - Get Profile: Fetch user details
+   - Update Profile: Modify user information
+   - Delete Account: Remove user
+
+4. **Password Reset**
+   - Request Reset: Sends reset token via email
+   - Confirm Reset: Set new password using token
+
+### Collection Features
+
+- **Public Endpoints** (no auth required)
+
+  - `POST /api/v1/register` - Create account
+  - `POST /api/v1/login` - Get JWT token
+  - `POST /api/v1/reset-password` - Request reset
+  - `POST /api/v1/reset-password/confirm` - Reset password
+
+- **Protected Endpoints** (JWT required)
+
+  - `GET /api/v1/users/me` - Get profile
+  - `PUT /api/v1/users/me` - Update profile
+  - `DELETE /api/v1/users/me` - Delete account
+
+- **Automatic Token Handling**
+  - Login success saves JWT token
+  - Protected routes use token automatically
+  - Token included in Authorization header
+
+## API Examples
 
 ### Register User
 
@@ -84,7 +147,7 @@ curl -X POST http://localhost:8080/api/v1/register \
   -H "Content-Type: application/json" \
   -d '{
     "email": "user@example.com",
-    "password": "securepassword",
+    "password": "securepassword123",
     "first_name": "John",
     "last_name": "Doe"
   }'
@@ -97,15 +160,29 @@ curl -X POST http://localhost:8080/api/v1/login \
   -H "Content-Type: application/json" \
   -d '{
     "email": "user@example.com",
-    "password": "securepassword"
+    "password": "securepassword123"
   }'
 ```
 
-### Get User Profile
+### Protected Routes
+
+#### Get Profile
 
 ```bash
-curl -X GET http://localhost:8080/api/v1/user \
+curl -X GET http://localhost:8080/api/v1/users/me \
   -H "Authorization: Bearer your-jwt-token"
+```
+
+#### Update Profile
+
+```bash
+curl -X PUT http://localhost:8080/api/v1/users/me \
+  -H "Authorization: Bearer your-jwt-token" \
+  -H "Content-Type: application/json" \
+  -d '{
+    "first_name": "Updated",
+    "last_name": "Name"
+  }'
 ```
 
 ## Project Structure

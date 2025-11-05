@@ -5,6 +5,7 @@ import (
 	"authentication-system/database"
 	"authentication-system/models"
 	"authentication-system/utils"
+	"log"
 	"net/http"
 	"strings"
 	"time"
@@ -43,6 +44,29 @@ func Register(c *gin.Context) {
 	if err := database.DB.Create(&user).Error; err != nil {
 		c.JSON(http.StatusInternalServerError, gin.H{"error": "Failed to create user"})
 		return
+	}
+
+	// generate email verification token and save it so we can verify later
+	if token, err := utils.GenerateResetPasswordToken(); err == nil {
+		resetToken := models.ResetToken{
+			Token:     token,
+			UserID:    user.ID,
+			Email:     user.Email,
+			ExpiresAt: time.Now().Add(24 * time.Hour),
+		}
+		if err := database.DB.Create(&resetToken).Error; err != nil {
+			// log but don't fail the registration
+			log.Printf("failed to save verification token: %v", err)
+		} else {
+			// send email asynchronously to avoid blocking registration
+			go func(to, t string) {
+				if err := utils.SendVerificationEmail(to, t); err != nil {
+					log.Printf("failed to send verification email to %s: %v", to, err)
+				}
+			}(user.Email, token)
+		}
+	} else {
+		log.Printf("failed to generate verification token: %v", err)
 	}
 
 	c.JSON(http.StatusCreated, gin.H{"message": "User registered successfully", "user": user.ToUserResponse()})

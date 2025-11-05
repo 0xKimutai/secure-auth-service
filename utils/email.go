@@ -5,6 +5,8 @@ import (
 	"crypto/rand"
 	"encoding/hex"
 	"fmt"
+	"log"
+	"strconv"
 
 	"gopkg.in/gomail.v2"
 )
@@ -38,7 +40,11 @@ func SendVerificationEmail(toEmail, verificationToken string) error {
 
 	port := 587
 	if config.AppConfig.SMTPort != "" {
-		fmt.Scanf(config.AppConfig.SMTPort, "%d", &port)
+		if p, err := strconv.Atoi(config.AppConfig.SMTPort); err == nil {
+			port = p
+		} else {
+			log.Printf("invalid SMTP_PORT '%s', using default %d: %v", config.AppConfig.SMTPort, port, err)
+		}
 	}
 
 	d := gomail.NewDialer(
@@ -76,7 +82,11 @@ func SendWelcomeEmail(toEmail, firstName string) error {
 
 	port := 587
 	if config.AppConfig.SMTPort != "" {
-		fmt.Scanf(config.AppConfig.SMTPort, "%d", port)
+		if p, err := strconv.Atoi(config.AppConfig.SMTPort); err == nil {
+			port = p
+		} else {
+			log.Printf("invalid SMTP_PORT '%s', using default %d: %v", config.AppConfig.SMTPort, port, err)
+		}
 	}
 
 	d := gomail.NewDialer(
@@ -124,10 +134,14 @@ func SendResetPasswordEmail(toEmail, resetToken string) error {
 
 	port := 587
 	if config.AppConfig.SMTPort != "" {
-		fmt.Scanf(config.AppConfig.SMTPort, "%d", &port)
+		if p, err := strconv.Atoi(config.AppConfig.SMTPort); err == nil {
+			port = p
+		} else {
+			log.Printf("invalid SMTP_PORT '%s', using default %d: %v", config.AppConfig.SMTPort, port, err)
+		}
 	}
 
-	//dialer &sending
+	// dialer & sending
 	d := gomail.NewDialer(
 		config.AppConfig.SMTPHost,
 		port,
